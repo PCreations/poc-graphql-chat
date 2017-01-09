@@ -10,7 +10,7 @@ import logo from './logo.svg'
 import './App.css'
 
 const MESSAGES_QUERY = gql`
-  {
+  query AllMessages {
     messages {
       ...ChatMessage
     }

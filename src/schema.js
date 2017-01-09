@@ -41,7 +41,7 @@ const Message = new GraphQLObjectType({
   description: 'A chat message',
   fields: () => ({
     id: { type: GraphQLString },
-    createdAt: { type: GraphQLInt },  // timestamp
+    createdAt: { type: GraphQLString, description: 'timestamp string to avoid coercing issue' },  // timestamp
     formattedDate: { type: GraphQLString, resolve: root => root.createdAt },
     content: { type: GraphQLString },
     user: { type: User }

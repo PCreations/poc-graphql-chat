@@ -1,27 +1,99 @@
 import React from 'react'
+import { graphql } from 'react-apollo'
+import gql from 'graphql-tag'
 
 import ChatMessage from './ChatMessage'
 import MessageInput from './MessageInput'
 
 
-const ChatBox = ({ messages = [], submitMessage }) => {
-  return (
-    <ul>
-      {messages.map(m => {
-        return (
-          <li key={m.id}>
-            <ChatMessage {...m}/>
-          </li>
-        )
-      })}
-      <MessageInput onSubmit={submitMessage}/>
-    </ul>
-  )
-}
+const SUBMIT_MESSAGE = gql`
+  mutation newMessage($input: MessageInput!) {
+    newMessage(input: $input) {
+      ...ChatMessage
+    }
+  },
+  ${ChatMessage.fragments.message}
+`
 
-ChatBox.PropTypes = {
-  messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired,
-  submitMessage: React.PropTypes.func.isRequired
+const SubmitMessageProvider = graphql(SUBMIT_MESSAGE, {
+  props: ({ ownProps, mutate }) => ({
+    submitMessage: ({ content, userId }) => mutate({
+      variables: { input: { content, userId } },
+      optimisticResponse: {
+        __typename: 'Mutation',
+        newMessage: {
+          __typename: 'Message',
+          createdAt: (+ new Date()).toString(),
+          content,
+          userId
+        }
+      },
+      updateQueries: {
+        AllMessages: (prev, { mutationResult }) => {
+          const newMessage = mutationResult.data.newMessage;
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              newMessage
+            ]
+          }
+        }
+      }
+    }),
+    children: ownProps.children
+  })
+})(({ children, submitMessage }) => children({ submitMessage }))
+
+
+class ChatBox extends React.Component {
+  static defaultProps = {
+    messages: []
+  }
+  static propTypes = {
+    messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired,
+    submitMessage: React.PropTypes.func.isRequired
+  }
+  constructor() {
+    super(...arguments)
+    this.state = {
+      message: ""
+    }
+    this.onInputChanged = this.onInputChanged.bind(this)
+  }
+  onInputChanged(value) {
+    this.setState({
+      message: value
+    })
+  }
+  render() {
+    const { messages } = this.props
+    return (
+      <ul>
+        {messages.map(m => {
+          return (
+            <li key={m.id}>
+              <ChatMessage {...m}/>
+            </li>
+          )
+        })}
+        <SubmitMessageProvider>
+          {({ submitMessage }) => {
+            return (
+              <MessageInput
+                message={this.state.message}
+                onChange={this.onInputChanged}
+                onSubmit={() => submitMessage({
+                  content: this.state.message,
+                  userId: "foobar"
+                })}
+              />
+            )
+          }}
+        </SubmitMessageProvider>
+      </ul>
+    )
+  }
 }
 
 export default ChatBox
