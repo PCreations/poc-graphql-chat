@@ -10,10 +10,29 @@ import {
   GraphQLEnumType,
   GraphQLNonNull,
   GraphQLInterfaceType
-} from 'graphql';
-
+} from 'graphql'
+import * as firebase from 'firebase'
 import uuidV1 from 'uuid/v1'
+import {
+  AUTH_USER_ID,
+  FIREBASE_API_KEY,
+  FIREBASE_ID,
+  FIREBASE_DATABASE_NAME,
+  FIREBASE_STORAGE_BUCKET_NAME
+} from './constants'
 
+const firebaseConfig = {
+  apiKey: FIREBASE_API_KEY,
+  authDomain: `https://${FIREBASE_ID}.firebaseapp.com`,
+  databaseURL: `https://${FIREBASE_DATABASE_NAME}.firebaseio.com`,
+  storageBucket: `${FIREBASE_STORAGE_BUCKET_NAME}.appspot.com`
+}
+
+firebase.initializeApp(firebaseConfig)
+const database = firebase.database()
+
+const messagesRef = database.ref('/messages/graphql')
+const getUser = id => database.ref(`/users/${id}`).once('value').then(snapshot => snapshot.val())
 
 let comments = {
   '6c84fb90-12c4-11e1-840d-7b25c5ee775a': {
@@ -21,7 +40,7 @@ let comments = {
     createdAt: + new Date(),
     content: 'First chat message ever !',
     user: {
-      id: 'foobar',
+      id: AUTH_USER_ID,
       displayName: 'FooBar'
     }
   }
@@ -44,7 +63,14 @@ const Message = new GraphQLObjectType({
     createdAt: { type: GraphQLString, description: 'timestamp string to avoid coercing issue' },  // timestamp
     formattedDate: { type: GraphQLString, resolve: root => root.createdAt },
     content: { type: GraphQLString },
-    user: { type: User }
+    user: { type: User, resolve: message => {
+      console.log("userId", message.user)
+      return getUser(message.user)
+        .then(user => ({
+          id: message.user,
+          displayName: `${user.name.first} ${user.name.last}`
+        }))
+    }}
   })
 })
 
@@ -63,10 +89,14 @@ const Query = new GraphQLObjectType({
     messages: {
       type: new GraphQLList(Message),
       resolve: () => {
-        return Promise.resolve()
+        return messagesRef.once('value').then(snapshot => {
+          console.log("messages", Object.values(snapshot.val() || {}))
+          return Object.values(snapshot.val() || {})
+        })
+        /*return Promise.resolve()
           .then(() => {
             return Object.values(comments)  // TODO
-          })
+          })*/
       }
     }
   })
@@ -81,6 +111,27 @@ const Mutation = new GraphQLObjectType({
         input: { type: MessageInput }
       },
       resolve: (root, { input }) => {
+        /*const id = database.ref().child(`users/${AUTH_USER_ID}/messages`).push().key
+        const comment = {
+          id,
+          createdAt: + new Date(),
+          content: input.content,
+          user: AUTH_USER_ID
+        }
+        const updates = {
+          `messages/graphql/${id}`: {
+            ...comment
+          }
+        }
+        const user = getUser
+        return database.ref().update(updates)
+          .then(() => ({
+            ...comment,
+            user: {
+              id: AUTH_USER_ID,
+
+            }
+          }))*/
         return Promise.resolve()
           .then(() => {
             const comment = {
@@ -88,6 +139,7 @@ const Mutation = new GraphQLObjectType({
               createdAt: + new Date(),
               content: input.content,
               user: {
+                id: AUTH_USER_ID,
                 displayName: 'FooBar'
               }
             }

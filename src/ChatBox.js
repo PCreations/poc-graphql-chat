@@ -2,9 +2,9 @@ import React from 'react'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
+import { AUTH_USER_ID } from './constants'
 import ChatMessage from './ChatMessage'
 import MessageInput from './MessageInput'
-
 
 const SUBMIT_MESSAGE = gql`
   mutation newMessage($input: MessageInput!) {
@@ -51,8 +51,7 @@ class ChatBox extends React.Component {
     messages: []
   }
   static propTypes = {
-    messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired,
-    submitMessage: React.PropTypes.func.isRequired
+    messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired
   }
   constructor() {
     super(...arguments)
@@ -85,7 +84,7 @@ class ChatBox extends React.Component {
                 onChange={this.onInputChanged}
                 onSubmit={() => submitMessage({
                   content: this.state.message,
-                  userId: "foobar"
+                  userId: AUTH_USER_ID
                 })}
               />
             )
