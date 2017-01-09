@@ -4,25 +4,24 @@ import ChatMessage from './ChatMessage'
 import MessageInput from './MessageInput'
 
 
-const ChatBox = ({ messages = [] }) => {
+const ChatBox = ({ messages = [], submitMessage }) => {
   return (
     <ul>
       {messages.map(m => {
         return (
           <li key={m.id}>
-            <strong>{m.user.displayName}</strong>
-            <i>{m.formattedDate}</i>
-            ` : ${m.content}`
+            <ChatMessage {...m}/>
           </li>
         )
       })}
-      <MessageInput/>
+      <MessageInput onSubmit={submitMessage}/>
     </ul>
   )
 }
 
 ChatBox.PropTypes = {
-  messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired
+  messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired,
+  submitMessage: React.PropTypes.func.isRequired
 }
 
 export default ChatBox

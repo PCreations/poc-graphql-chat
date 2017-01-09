@@ -10,9 +10,9 @@ const ChatMessage = ({
 }) => {
   return (
     <div>
-
+      <User {...user}/>
       <i>{formattedDate}</i>
-      ` : ${content}`
+      {` : ${content}`}
     </div>
   )
 }
