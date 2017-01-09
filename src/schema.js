@@ -91,7 +91,7 @@ const Query = new GraphQLObjectType({
       resolve: () => {
         return messagesRef.once('value').then(snapshot => {
           console.log("messages", Object.values(snapshot.val() || {}))
-          return Object.values(snapshot.val() || {})
+          return Object.values(snapshot.val() || {}).sort((a, b) => a.createdAt - b.createdAt)
         })
         /*return Promise.resolve()
           .then(() => {
@@ -111,28 +111,23 @@ const Mutation = new GraphQLObjectType({
         input: { type: MessageInput }
       },
       resolve: (root, { input }) => {
-        /*const id = database.ref().child(`users/${AUTH_USER_ID}/messages`).push().key
+        const id = database.ref().child(`users/${AUTH_USER_ID}/messages`).push().key
         const comment = {
           id,
           createdAt: + new Date(),
           content: input.content,
           user: AUTH_USER_ID
         }
-        const updates = {
-          `messages/graphql/${id}`: {
-            ...comment
-          }
+        const updates = {}
+        updates[`messages/graphql/${id}`] = {
+          ...comment
         }
-        const user = getUser
         return database.ref().update(updates)
           .then(() => ({
             ...comment,
-            user: {
-              id: AUTH_USER_ID,
-
-            }
-          }))*/
-        return Promise.resolve()
+            user: AUTH_USER_ID,
+          }))
+        /*return Promise.resolve()
           .then(() => {
             const comment = {
               id: uuidV1(),
@@ -145,7 +140,7 @@ const Mutation = new GraphQLObjectType({
             }
             comments[comment.id] = comment
             return comment
-          })
+          })*/
       }
     }
   })
