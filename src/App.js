@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
-import { addNewMessagesListener } from './schema'
+import { addNewMessagesListener, addOnUsersChanges } from './schema'
 import ChatBox from './ChatBox'
 import ChatMessage from './ChatMessage'
 import logo from './logo.svg'
@@ -28,12 +28,15 @@ class NewMessagesListener extends React.Component {
   constructor() {
     super(...arguments)
     this.listener = null
+    this.listener2 = null
   }
   componentDidMount() {
     this.listener = addNewMessagesListener(this.props.refetch)
+    this.listener2 = addOnUsersChanges(this.props.refetch)
   }
   componentWillUnmount() {
     this.listener.off()
+    this.listener2.off()
   }
   render() {
     const { loading, messages, children } = this.props

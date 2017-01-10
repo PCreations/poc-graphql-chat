@@ -32,6 +32,7 @@ firebase.initializeApp(firebaseConfig)
 const database = firebase.database()
 const messagesRef = database.ref('/messages/graphql')
 export const addNewMessagesListener = listener => messagesRef.on('value', snapshot => listener(snapshot.val()))
+export const addOnUsersChanges = listener => database.ref('/users').on('value', snapshot => listener(snapshot.val()))
 
 const getUser = id => database.ref(`/users/${id}`).once('value').then(snapshot => snapshot.val())
 
@@ -91,7 +92,6 @@ const Query = new GraphQLObjectType({
       type: new GraphQLList(Message),
       resolve: () => {
         return messagesRef.once('value').then(snapshot => {
-          console.log("messages", Object.values(snapshot.val() || {}))
           return Object.values(snapshot.val() || {}).sort((a, b) => a.createdAt - b.createdAt)
         })
         /*return Promise.resolve()
