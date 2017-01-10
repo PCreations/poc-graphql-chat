@@ -4,6 +4,7 @@ import fetch from 'isomorphic-fetch'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
+import { addNewMessagesListener } from './schema'
 import ChatBox from './ChatBox'
 import ChatMessage from './ChatMessage'
 import logo from './logo.svg'
@@ -17,16 +18,39 @@ const MESSAGES_QUERY = gql`
   },
   ${ChatMessage.fragments.message}
 `
+class NewMessagesListener extends React.Component {
+  static propTypes = {
+    loading: React.PropTypes.bool.isRequired,
+    messages: React.PropTypes.arrayOf(React.PropTypes.shape(ChatMessage.propTypes)).isRequired,
+    children: React.PropTypes.func.isRequired,
+    refetch: React.PropTypes.func.isRequired,
+  }
+  constructor() {
+    super(...arguments)
+    this.listener = null
+  }
+  componentDidMount() {
+    this.listener = addNewMessagesListener(this.props.refetch)
+  }
+  componentWillUnmount() {
+    this.listener.off()
+  }
+  render() {
+    const { loading, messages, children } = this.props
+    return children({ loading, messages })
+  }
+}
 
 const MessagesProvider = graphql(MESSAGES_QUERY, {
   props: ({ ownProps: { children }, data }) => {
     return {
       loading: data.loading,
       messages: data.messages || [],
+      refetch: data.refetch,
       children
     }
   }
-})(({ children, loading, messages }) => children({ loading, messages }))
+})(NewMessagesListener)
 /*const graphQLFetcher = graphQLParams => {
   return fetch(window.location.origin + '/graphql', {
     method: 'post',

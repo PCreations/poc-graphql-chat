@@ -30,8 +30,9 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig)
 const database = firebase.database()
-
 const messagesRef = database.ref('/messages/graphql')
+export const addNewMessagesListener = listener => messagesRef.on('value', snapshot => listener(snapshot.val()))
+
 const getUser = id => database.ref(`/users/${id}`).once('value').then(snapshot => snapshot.val())
 
 let comments = {
