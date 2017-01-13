@@ -1,7 +1,5 @@
 import { makeExecutableSchema } from 'graphql-tools'
 
-import { pubsub } from './subscriptions';
-
 const schema = [`
   # A chat user
   type User {
@@ -66,14 +64,8 @@ const resolvers = {
         .add(input.content, input.userId)
         .then(id => context.messageModel.getById(id))
         .then(message => {
-          pubsub.publish('messageAdded', message)
           return message
         })
-    }
-  },
-  Subscription: {
-    messageAdded(message) {
-      return message
     }
   }
 }

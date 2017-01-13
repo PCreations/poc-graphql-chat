@@ -34,7 +34,7 @@ export class Message {
       userId
     })
   }
-  /*addNewMessagesListener(listener: () => {}): Promise<[{}]> {
+  addNewMessagesListener(listener: () => {}): Promise<[{}]> {
     return this.connector.on(this.rootPath, listener)
-  }*/
+  }
 }
