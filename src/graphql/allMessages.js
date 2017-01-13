@@ -28,12 +28,15 @@ class NewMessagesListener extends React.Component {
     this.onUsersChanges = null
   }
   componentDidMount() {
-    this.onMessagesChanged = app.models.message.addNewMessagesListener(this.props.refetch)
-    //this.onUsersChanges = userModel.addOnUsersChanges(this.props.refetch)
+    this.onMessagesChanged = app.models.message.addNewMessagesListener(() => this.props.refetch())
+    this.onUsersChanges = app.models.user.addOnUsersChanges(() => {
+      console.log("users changes")
+      this.props.refetch()
+    })
   }
   componentWillUnmount() {
     this.onMessagesChanged.off()
-    //this.onUsersChanges.off()
+    this.onUsersChanges.off()
   }
   render() {
     const { loading, messages, children } = this.props
