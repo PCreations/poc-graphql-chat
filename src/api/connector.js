@@ -14,14 +14,17 @@ export class FirebaseConnector {
     return this._database.ref(path)
   }
   get(path: string): Promise<any> {
-    return this.ref(path).once('value').then(snapshot => snapshot.val())
+    return new Promise((resolve, reject) => {
+        this.ref(path).on('value', snapshot => {
+            resolve(snapshot.val())
+        })
+    })
   }
   on(path: string, listener: () => {}): Promise<any> {
     return this.ref(path).on('value', snapshot => listener(snapshot.val()))
   }
   push(path: string, data: {}): Promise<string> {
     const ref = this.ref(path).push()
-    console.log('setting data', data)
     ref.set({
       id: ref.key,
       ...data,

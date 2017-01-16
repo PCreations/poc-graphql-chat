@@ -19,27 +19,6 @@ const SubmitMessageProvider = graphql(SUBMIT_MESSAGE, {
   props: ({ ownProps, mutate }) => ({
     submitMessage: ({ content, userId }) => mutate({
       variables: { input: { content, userId } },
-      optimisticResponse: {
-        __typename: 'Mutation',
-        newMessage: {
-          __typename: 'Message',
-          createdAt: (+ new Date()).toString(),
-          content,
-          userId
-        }
-      },
-      updateQueries: {
-        AllMessages: (prev, { mutationResult }) => {
-          const newMessage = mutationResult.data.newMessage;
-          return {
-            ...prev,
-            messages: [
-              ...prev.messages,
-              newMessage
-            ]
-          }
-        }
-      }
     }),
     children: ownProps.children
   })
